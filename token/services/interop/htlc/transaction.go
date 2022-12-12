@@ -23,10 +23,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	ScriptType            = "htlc" // htlc script
-	defaultDeadlineOffset = time.Hour
-)
+const defaultDeadlineOffset = time.Hour
 
 // WithHash sets a hash attribute to be used to customize the transfer command
 func WithHash(hash []byte) token.TransferOption {
@@ -74,17 +71,6 @@ func compileTransferOptions(opts ...token.TransferOption) (*token.TransferOption
 // Transaction holds a ttx transaction
 type Transaction struct {
 	*ttx.Transaction
-}
-
-// NewTransaction returns a new token transaction customized with the passed opts that will be signed by the passed signer
-func NewTransaction(sp view.Context, signer view.Identity, opts ...ttx.TxOption) (*Transaction, error) {
-	tx, err := ttx.NewTransaction(sp, signer, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &Transaction{
-		Transaction: tx,
-	}, nil
 }
 
 // NewAnonymousTransaction returns a new anonymous token transaction customized with the passed opts

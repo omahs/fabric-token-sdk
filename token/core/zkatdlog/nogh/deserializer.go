@@ -17,7 +17,7 @@ import (
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity/msp/idemix"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity/msp/x509"
-	"github.com/hyperledger-labs/fabric-token-sdk/token/core/interop/htlc"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/core/interop"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/crypto"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/driver"
 	"github.com/pkg/errors"
@@ -56,7 +56,7 @@ func NewDeserializer(pp *crypto.PublicParams) (*deserializer, error) {
 	return &deserializer{
 		auditorDeserializer: &x509.MSPIdentityDeserializer{},
 		issuerDeserializer:  &x509.MSPIdentityDeserializer{},
-		ownerDeserializer:   htlc.NewDeserializer(identity.NewRawOwnerIdentityDeserializer(idemixDes)),
+		ownerDeserializer:   interop.NewDeserializer(identity.NewRawOwnerIdentityDeserializer(idemixDes)),
 		auditDeserializer:   idemixDes,
 	}, nil
 }
@@ -132,7 +132,7 @@ func (e *enrollmentService) GetEnrollmentID(auditInfo []byte) (string, error) {
 	}
 
 	// Try to unmarshal it as ScriptInfo
-	si := &htlc.ScriptInfo{}
+	si := &interop.ScriptInfo{}
 	err := json.Unmarshal(auditInfo, si)
 	if err == nil && (len(si.Sender) != 0 || len(si.Recipient) != 0) {
 		if len(si.Recipient) != 0 {

@@ -10,15 +10,17 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/common"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity"
-	"github.com/hyperledger-labs/fabric-token-sdk/token/core/interop/htlc"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/core/interop"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/driver"
-	token2 "github.com/hyperledger-labs/fabric-token-sdk/token/token"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/services/interop/htlc"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/services/interop/pledge"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/token"
 	"github.com/pkg/errors"
 )
 
 // Transfer returns a TransferAction as a function of the passed arguments
 // It also returns the corresponding TransferMetadata
-func (s *Service) Transfer(txID string, wallet driver.OwnerWallet, ids []*token2.ID, Outputs []*token2.Token, opts *driver.TransferOptions) (driver.TransferAction, *driver.TransferMetadata, error) {
+func (s *Service) Transfer(txID string, wallet driver.OwnerWallet, ids []*token.ID, Outputs []*token.Token, opts *driver.TransferOptions) (driver.TransferAction, *driver.TransferMetadata, error) {
 	// select inputs
 	inputIDs, inputTokens, err := s.TokenLoader.GetTokens(ids)
 	if err != nil {
@@ -73,16 +75,24 @@ func (s *Service) Transfer(txID string, wallet driver.OwnerWallet, ids []*token2
 			receivers = append(receivers, output.Output.Owner.Raw)
 			continue
 		}
-		_, recipient, err := htlc.GetScriptSenderAndRecipient(owner)
+		_, recipient, issuer, err := interop.GetScriptSenderAndRecipient(owner)
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "failed getting script sender and recipient")
 		}
-		receivers = append(receivers, recipient)
+		if owner.Type == htlc.ScriptType {
+			receivers = append(receivers, recipient)
+			continue
+		}
+		if owner.Type == pledge.ScriptType {
+			receivers = append(receivers, issuer)
+			continue
+		}
+		return nil, nil, errors.Errorf("owner's type not recognized [%s]", owner.Type)
 	}
 
 	var senderAuditInfos [][]byte
 	for _, t := range inputTokens {
-		auditInfo, err := htlc.GetOwnerAuditInfo(t.Owner.Raw, s)
+		auditInfo, err := interop.GetOwnerAuditInfo(t.Owner.Raw, s)
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "failed getting audit info for sender identity [%s]", view.Identity(t.Owner.Raw).String())
 		}
@@ -91,9 +101,9 @@ func (s *Service) Transfer(txID string, wallet driver.OwnerWallet, ids []*token2
 
 	var receiverAuditInfos [][]byte
 	for _, output := range outs {
-		auditInfo, err := htlc.GetOwnerAuditInfo(output.Output.Owner.Raw, s)
+		auditInfo, err := interop.GetOwnerAuditInfo(output.Output.Owner.Raw, s)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "failed getting audit info for recipient identity [%s]", view.Identity(output.Output.Owner.Raw).String())
+			return nil, nil, errors.Wrapf(err, "failed getting audit info for receiver identity [%s]", view.Identity(output.Output.Owner.Raw).String())
 		}
 		receiverAuditInfos = append(receiverAuditInfos, auditInfo)
 	}

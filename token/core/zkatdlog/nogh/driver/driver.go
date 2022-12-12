@@ -10,6 +10,7 @@ import (
 	"time"
 
 	math "github.com/IBM/mathlib"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/services/kvs"
 	"github.com/hyperledger-labs/fabric-token-sdk/token"
@@ -17,16 +18,27 @@ import (
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/config"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity/msp"
+	"github.com/hyperledger-labs/fabric-token-sdk/token/core/state/fabric"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/crypto"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/crypto/ppm"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/crypto/validator"
 	zkatdlog "github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/nogh"
+	fabric3 "github.com/hyperledger-labs/fabric-token-sdk/token/core/zkatdlog/nogh/driver/state/fabric"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/driver"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/services/network"
 	"github.com/pkg/errors"
 )
 
-type Driver struct {
+type Driver struct{}
+
+func (d *Driver) NewStateQueryExecutor(sp driver.ServiceProvider, url string) (driver.StateQueryExecutor, error) {
+	// Only Fabric is supported as target network
+	return fabric3.NewStateQueryExecutor(sp, url, fabric2.GetDefaultFNS(sp))
+}
+
+func (d *Driver) NewStateVerifier(sp driver.ServiceProvider, url string) (driver.StateVerifier, error) {
+	// Only Fabric is supported as target network
+	return fabric3.NewStateVerifier(sp, url, fabric2.GetDefaultFNS(sp))
 }
 
 func (d *Driver) PublicParametersFromBytes(params []byte) (driver.PublicParameters, error) {
@@ -139,5 +151,7 @@ func (d *Driver) NewPublicParametersManager(params driver.PublicParameters) (dri
 }
 
 func init() {
-	core.Register(crypto.DLogPublicParameters, &Driver{})
+	d := &Driver{}
+	core.Register(crypto.DLogPublicParameters, d)
+	fabric.RegisterStateDriver(crypto.DLogPublicParameters, d)
 }
