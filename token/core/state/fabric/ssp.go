@@ -96,7 +96,7 @@ func (f *StateServiceProvider) Verifier(url string) (driver.StateVerifier, error
 	}
 	tms := token.GetManagementService(f.sp, token.WithTMSID(tmsID))
 	if tms != nil {
-		identifier = tms.PublicParametersManager().Identifier()
+		identifier = tms.PublicParametersManager().PublicParameters().Identifier()
 	} else {
 		// If not, fetch public parameters, if not fetched already
 		ppRaw, err := f.fetchPublicParameters(url)

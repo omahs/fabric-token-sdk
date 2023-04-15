@@ -426,7 +426,7 @@ func pledge(network *integration.Infrastructure, sender, wallet, typ string, amo
 		OriginWallet:          wallet,
 	}))
 	Expect(err).NotTo(HaveOccurred())
-	info := &pledge2.PledgeInformation{}
+	info := &pledge2.Info{}
 	common.JSONUnmarshal(raw.([]byte), info)
 	Expect(network.Client(sender).IsTxFinal(
 		info.TxID,

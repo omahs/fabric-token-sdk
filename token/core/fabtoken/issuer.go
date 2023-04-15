@@ -57,19 +57,19 @@ func (s *Service) Issue(issuerIdentity view.Identity, tokenType string, values [
 
 	md, err := getIssueActionMetadata(opts)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed getting issue action metadata")
+		return nil, nil, errors.Wrapf(err, "failed getting issue action metadata")
 	}
 
-	//return &IssueAction{Issuer: issuerIdentity, Outputs: outs, Metadata: md},
-	//	metas,
-	//	issuerIdentity,
-	//	nil
-	meta := &driver.IssueMetadata{
+	issueAction := &IssueAction{
+		Issuer:   issuerIdentity,
+		Outputs:  outs,
+		Metadata: md,
+	}
+	issueMetadata := &driver.IssueMetadata{
 		Issuer:    issuerIdentity,
 		TokenInfo: metas,
 	}
-
-	return &IssueAction{Issuer: issuerIdentity, Outputs: outs}, meta, nil
+	return issueAction, issueMetadata, nil
 }
 
 func getIssueActionMetadata(opts *driver.IssueOptions) (map[string][]byte, error) {

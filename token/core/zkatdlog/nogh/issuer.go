@@ -70,12 +70,10 @@ func (s *Service) Issue(issuerIdentity view.Identity, tokenType string, values [
 
 	md, err := getIssueActionMetadata(opts)
 	if err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "failed getting issue action metadata")
+		return nil, nil, errors.Wrapf(err, "failed getting issue action metadata")
 	}
-
 	issue.Metadata = md
 
-	return issue, outputMetadataRaw, fid, err
 	meta := &driver.IssueMetadata{
 		Issuer:    issuerSerializedIdentity,
 		TokenInfo: outputMetadataRaw,

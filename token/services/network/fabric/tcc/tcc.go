@@ -334,30 +334,6 @@ func (cc *TokenChaincode) AreTokensSpent(idsRaw []byte, stub shim.ChaincodeStubI
 	return shim.Success(raw)
 }
 
-func (cc *TokenChaincode) NewMetricsAgent(id string) (Agent, error) {
-	cc.MetricsLock.Lock()
-	defer cc.MetricsLock.Unlock()
-
-	if cc.MetricsAgent != nil {
-		return cc.MetricsAgent, nil
-	}
-
-	if !cc.MetricsEnabled {
-		cc.MetricsAgent = metrics.NewNullAgent()
-		return cc.MetricsAgent, nil
-	}
-
-	var err error
-	cc.MetricsAgent, err = metrics.NewStatsdAgent(
-		tracing.Host(id),
-		tracing.StatsDSink(cc.MetricsServer),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return cc.MetricsAgent, nil
-}
-
 func (cc *TokenChaincode) ProofOfTokenExistenceQuery(idRaw []byte, stub shim.ChaincodeStubInterface) pb.Response {
 	raw, err := base64.StdEncoding.DecodeString(string(idRaw))
 	if err != nil {

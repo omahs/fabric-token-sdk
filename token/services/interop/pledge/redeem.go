@@ -31,7 +31,7 @@ func (t *Transaction) RedeemPledge(wallet *token.OwnerWallet, tok *token2.Unspen
 		return errors.New("must provide token ID")
 	}
 
-	q, err := token2.ToQuantity(tok.Quantity, t.TokenRequest.TokenService.PublicParametersManager().Precision())
+	q, err := token2.ToQuantity(tok.Quantity, t.TokenRequest.TokenService.PublicParametersManager().PublicParameters().Precision())
 	if err != nil {
 		return errors.Wrapf(err, "failed to convert quantity [%s]", tok.Quantity)
 	}

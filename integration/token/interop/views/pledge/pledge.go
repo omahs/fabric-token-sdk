@@ -7,9 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package pledge
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"math/rand"
 	"time"
 
 	view2 "github.com/hyperledger-labs/fabric-smart-client/platform/view"
@@ -43,17 +43,17 @@ type Pledge struct {
 	PledgeID string
 }
 
-// PledgeView is the view of the initiator of a pledge operation
-type PledgeView struct {
+// View is the view of the initiator of a pledge operation
+type View struct {
 	*Pledge
 }
 
-type PledgeInformation struct {
+type Info struct {
 	TxID     string
 	PledgeID string
 }
 
-func (pv *PledgeView) Call(context view.Context) (interface{}, error) {
+func (pv *View) Call(context view.Context) (interface{}, error) {
 	// Collect recipient's token-sdk identity
 	recipient, err := pledge.RequestPledgeRecipientIdentity(context, pv.Recipient, pv.DestinationNetworkURL, token.WithTMSID(pv.OriginTMSID))
 	assert.NoError(err, "failed getting recipient identity")
@@ -94,22 +94,22 @@ func (pv *PledgeView) Call(context view.Context) (interface{}, error) {
 	_, err = context.RunView(pledge.NewDistributePledgeView(tx))
 	assert.NoError(err, "failed to send the pledge info")
 
-	return json.Marshal(&PledgeInformation{TxID: tx.ID(), PledgeID: pv.PledgeID})
+	return json.Marshal(&Info{TxID: tx.ID(), PledgeID: pv.PledgeID})
 }
 
-type PledgeViewFactory struct{}
+type ViewFactory struct{}
 
-func (pvf *PledgeViewFactory) NewView(in []byte) (view.View, error) {
-	f := &PledgeView{Pledge: &Pledge{}}
+func (pvf *ViewFactory) NewView(in []byte) (view.View, error) {
+	f := &View{Pledge: &Pledge{}}
 	err := json.Unmarshal(in, f.Pledge)
 	assert.NoError(err, "failed unmarshalling input")
 
 	return f, nil
 }
 
-type PledgeRecipientResponderView struct{}
+type RecipientResponderView struct{}
 
-func (p *PledgeRecipientResponderView) Call(context view.Context) (interface{}, error) {
+func (p *RecipientResponderView) Call(context view.Context) (interface{}, error) {
 	me, err := pledge.RespondRequestPledgeRecipientIdentity(context)
 	assert.NoError(err, "failed to respond to identity request")
 
@@ -130,9 +130,9 @@ func (p *PledgeRecipientResponderView) Call(context view.Context) (interface{}, 
 	return nil, nil
 }
 
-type PledgeIssuerResponderView struct{}
+type IssuerResponderView struct{}
 
-func (p *PledgeIssuerResponderView) Call(context view.Context) (interface{}, error) {
+func (p *IssuerResponderView) Call(context view.Context) (interface{}, error) {
 	me, err := pledge.RespondRequestRecipientIdentity(context)
 	assert.NoError(err, "failed to respond to identity request")
 
@@ -155,7 +155,7 @@ func (p *PledgeIssuerResponderView) Call(context view.Context) (interface{}, err
 	_, err = context.RunView(pledge.NewAcceptView(tx))
 	assert.NoError(err, "failed to accept new tokens")
 
-	// The issue is in the same Fabric network of the pledger
+	// The issue is in the same Fabric network of the pledge
 	// Before completing, the recipient waits for finality of the transaction
 	_, err = context.RunView(pledge.NewFinalityView(tx))
 	assert.NoError(err, "new tokens were not committed")
