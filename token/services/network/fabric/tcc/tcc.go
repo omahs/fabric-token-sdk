@@ -17,7 +17,6 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/services/flogging"
 	"github.com/hyperledger-labs/fabric-token-sdk/token"
-	"github.com/hyperledger-labs/fabric-token-sdk/token/services/interop/vault/prover"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/services/vault/translator"
 	token2 "github.com/hyperledger-labs/fabric-token-sdk/token/token"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -350,7 +349,7 @@ func (cc *TokenChaincode) proveTokenExists(tokenId *token2.ID, stub shim.Chainco
 	logger.Infof("proof of existence [%s]", tokenId.String())
 	logger.Infof("generate proof of existence...")
 	rwset := &rwsWrapper{stub: stub}
-	p := prover.New(rwset, "")
+	p := translator.New("", rwset, "")
 	if err := p.ProveTokenExists(tokenId); err != nil {
 		return shim.Error(fmt.Sprintf("failed to confirm if token with ID [%s] exists", tokenId))
 	}
@@ -374,7 +373,7 @@ func (cc *TokenChaincode) proveTokenDoesNotExist(tokenID *token2.ID, origin stri
 	logger.Infof("proof of non existence of token [%s] from network [%s]", tokenID.String(), origin)
 	logger.Infof("generate proof of non-existence...")
 	rwset := &rwsWrapper{stub: stub}
-	p := prover.New(rwset, "")
+	p := translator.New("", rwset, "")
 	if err := p.ProveTokenDoesNotExist(tokenID, origin, deadline); err != nil {
 		return shim.Error(fmt.Sprintf("failed to confirm if token from network [%s] and with key [%s] does not exist", origin, tokenID.String()))
 	}
@@ -398,7 +397,7 @@ func (cc *TokenChaincode) proveTokenWithMetadataExist(tokenID *token2.ID, origin
 	logger.Infof("proof of existence of token with metadata [%s] and network [%s]", tokenID.String(), origin)
 	logger.Infof("generate proof of existence...")
 	rwset := &rwsWrapper{stub: stub}
-	p := prover.New(rwset, "")
+	p := translator.New("", rwset, "")
 	if err := p.ProveTokenWithMetadataExists(tokenID, origin); err != nil {
 		fmt.Println(err.Error())
 		return shim.Error(fmt.Sprintf("failed to confirm if token from network [%s] and with key [%s] exist", origin, tokenID.String()))

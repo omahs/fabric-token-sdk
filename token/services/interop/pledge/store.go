@@ -19,50 +19,20 @@ type store interface {
 	Put(id string, state interface{}) error
 	Get(id string, state interface{}) error
 	Delete(id string) error
-	GetByPartialCompositeID(prefix string, attrs []string) (CommonIteratorInterface, error)
+	GetByPartialCompositeID(prefix string, attrs []string) (kvs.Iterator, error)
 }
 
-type CommonIteratorInterface interface {
-	Next(state interface{}) (string, error)
-	HasNext() bool
-	Close() error
-}
-
-type kvsStore struct {
-	sf view.ServiceProvider
-}
-
-func (k *kvsStore) Exists(id string) bool {
-	return kvs.GetService(k.sf).Exists(id)
-}
-
-func (k *kvsStore) Put(id string, state interface{}) error {
-	return kvs.GetService(k.sf).Put(id, state)
-}
-
-func (k *kvsStore) Get(id string, state interface{}) error {
-	return kvs.GetService(k.sf).Get(id, state)
-}
-
-func (k *kvsStore) Delete(id string) error {
-	return kvs.GetService(k.sf).Delete(id)
-}
-
-func (k *kvsStore) GetByPartialCompositeID(prefix string, attrs []string) (CommonIteratorInterface, error) {
-	return kvs.GetService(k.sf).GetByPartialCompositeID(prefix, attrs)
-}
-
-type pledgeVault struct {
+type VaultStore struct {
 	store store
 }
 
-func Vault(sf view.ServiceProvider) *pledgeVault {
-	return &pledgeVault{
-		store: &kvsStore{sf: sf},
+func Vault(sf view.ServiceProvider) *VaultStore {
+	return &VaultStore{
+		store: kvs.GetService(sf),
 	}
 }
 
-func (ps *pledgeVault) Store(info *PledgeInfo) error {
+func (ps *VaultStore) Store(info *Info) error {
 	raw, err := info.Bytes()
 	if err != nil {
 		return errors.Wrapf(err, "failed marshalling info to raw")
@@ -84,7 +54,7 @@ func (ps *pledgeVault) Store(info *PledgeInfo) error {
 	)
 }
 
-func (ps *pledgeVault) PledgeByTokenID(tokenID *token.ID) ([]*PledgeInfo, error) {
+func (ps *VaultStore) PledgeByTokenID(tokenID *token.ID) ([]*Info, error) {
 	if tokenID == nil {
 		return nil, errors.Errorf("passed nil token id")
 	}
@@ -99,9 +69,9 @@ func (ps *pledgeVault) PledgeByTokenID(tokenID *token.ID) ([]*PledgeInfo, error)
 		return nil, errors.Wrapf(err, "failed getting iterator over pledges")
 	}
 
-	var res []*PledgeInfo
+	var res []*Info
 	for it.HasNext() {
-		var info *PledgeInfo
+		var info *Info
 		if _, err := it.Next(&info); err != nil {
 			return nil, errors.Wrapf(err, "failed getting next pledge info")
 		}
@@ -113,7 +83,7 @@ func (ps *pledgeVault) PledgeByTokenID(tokenID *token.ID) ([]*PledgeInfo, error)
 	return res, nil
 }
 
-func (ps *pledgeVault) Delete(pledges []*PledgeInfo) error {
+func (ps *VaultStore) Delete(pledges []*Info) error {
 	for _, info := range pledges {
 		raw, err := info.Bytes()
 		if err != nil {

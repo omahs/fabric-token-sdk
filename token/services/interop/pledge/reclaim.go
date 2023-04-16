@@ -18,7 +18,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-const ReclaimKey = "metadata.reclaim"
+const (
+	MetadataReclaimKey = "metadata.reclaim"
+)
 
 func (t *Transaction) Reclaim(wallet *token.OwnerWallet, tok *token2.UnspentToken, issuerSignature []byte, tokenID *token2.ID, proof []byte) error {
 	if proof == nil {
@@ -82,7 +84,7 @@ func (t *Transaction) Reclaim(wallet *token.OwnerWallet, tok *token2.UnspentToke
 		return err
 	}
 
-	proofKey := ReclaimKey + fmt.Sprintf(".%d.%s", tokenID.Index, tokenID.TxId)
+	proofKey := MetadataReclaimKey + fmt.Sprintf(".%d.%s", tokenID.Index, tokenID.TxId)
 
 	_, err = t.TokenRequest.Transfer(wallet, tok.Type, []uint64{q.ToBigInt().Uint64()}, []view.Identity{script.Sender}, token.WithTokenIDs(tok.Id), token.WithTransferMetadata(proofKey, proof))
 	return err

@@ -79,11 +79,11 @@ func (cr *ClaimRequest) FromBytes(raw []byte) error {
 type claimInitiatorView struct {
 	issuer      view.Identity
 	recipient   view.Identity
-	pledgeInfo  *PledgeInfo
+	pledgeInfo  *Info
 	pledgeProof []byte
 }
 
-func RequestClaim(context view.Context, issuer view.Identity, pledgeInfo *PledgeInfo, recipient view.Identity, pledgeProof []byte) (view.Session, error) {
+func RequestClaim(context view.Context, issuer view.Identity, pledgeInfo *Info, recipient view.Identity, pledgeProof []byte) (view.Session, error) {
 	boxed, err := context.RunView(&claimInitiatorView{
 		issuer:      issuer,
 		pledgeInfo:  pledgeInfo,
@@ -212,7 +212,7 @@ func ValidateClaimRequest(context view.Context, req *ClaimRequest) error {
 			Namespace: token.GetManagementService(context, token.WithTMS(fabric.GetDefaultFNS(context).Name(), fabric.GetDefaultChannel(context).Name(), "")).Namespace(),
 		},
 	)
-	info := &PledgeInfo{
+	info := &Info{
 		Amount:        req.Quantity,
 		TokenID:       req.OriginTokenID,
 		TokenMetadata: nil,

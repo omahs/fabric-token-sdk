@@ -11,6 +11,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/hyperledger-labs/fabric-token-sdk/token/services/vault/keys"
+
+	"github.com/hyperledger-labs/fabric-token-sdk/token/services/vault/translator"
+
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
 	weaver2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/weaver"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view"
@@ -18,7 +22,6 @@ import (
 	"github.com/hyperledger-labs/fabric-token-sdk/token/core/identity"
 	fabric2 "github.com/hyperledger-labs/fabric-token-sdk/token/core/state/fabric"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/services/interop/pledge"
-	"github.com/hyperledger-labs/fabric-token-sdk/token/services/interop/vault/prover"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/services/network/fabric/tcc"
 	"github.com/hyperledger-labs/fabric-token-sdk/token/token"
 	"github.com/pkg/errors"
@@ -152,7 +155,7 @@ func (v *StateVerifier) VerifyProofExistence(proofRaw []byte, tokenID *token.ID,
 		return errors.Wrapf(err, "failed to unmarshal claim proof")
 	}
 
-	key, err := prover.CreateProofOfExistenceKey(tokenID)
+	key, err := keys.CreateProofOfExistenceKey(tokenID)
 	if err != nil {
 		return err
 	}
@@ -245,7 +248,7 @@ func (v *StateVerifier) VerifyProofNonExistence(proofRaw []byte, tokenID *token.
 		return errors.Wrapf(err, "failed to retrieve RWset")
 	}
 
-	key, err := prover.CreateProofOfNonExistenceKey(tokenID, origin)
+	key, err := keys.CreateProofOfNonExistenceKey(tokenID, origin)
 	if err != nil {
 		return errors.Wrapf(err, "failed creating key for proof of non-existence")
 	}
@@ -258,7 +261,7 @@ func (v *StateVerifier) VerifyProofNonExistence(proofRaw []byte, tokenID *token.
 	if err != nil {
 		return errors.Wrapf(err, "failed to check proof of non-existence")
 	}
-	p := &prover.ProofOfTokenMetadataNonExistence{}
+	p := &translator.ProofOfTokenMetadataNonExistence{}
 	if raw == nil {
 		return errors.Errorf("could not find proof of non-existence")
 	}
@@ -309,7 +312,7 @@ func (v *StateVerifier) VerifyProofTokenWithMetadataExistence(proofRaw []byte, t
 		return errors.Wrapf(err, "failed to retrieve RWset")
 	}
 
-	key, err := prover.CreateProofOfMetadataExistenceKey(tokenID, origin)
+	key, err := keys.CreateProofOfMetadataExistenceKey(tokenID, origin)
 	if err != nil {
 		return errors.Wrapf(err, "failed creating key for proof of token existence")
 	}
@@ -322,7 +325,7 @@ func (v *StateVerifier) VerifyProofTokenWithMetadataExistence(proofRaw []byte, t
 	if err != nil {
 		return errors.Wrapf(err, "failed to check proof of token existence")
 	}
-	p := &prover.ProofOfTokenMetadataExistence{}
+	p := &translator.ProofOfTokenMetadataExistence{}
 	if raw == nil {
 		return errors.Errorf("could not find proof of token existence")
 	}

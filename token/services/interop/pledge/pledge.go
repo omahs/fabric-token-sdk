@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	PledgeKey             = "metadata.pledge"
+	MetadataKey           = "metadata.pledge"
 	defaultDeadlineOffset = time.Hour
 )
 
@@ -42,7 +42,7 @@ func (t *Transaction) Pledge(wallet *token.OwnerWallet, destNetwork string, dead
 	if err != nil {
 		return err
 	}
-	_, err = t.TokenRequest.Transfer(wallet, typ, []uint64{value}, []view.Identity{script}, token.WithTransferMetadata(PledgeKey+pledgeID, []byte("1")))
+	_, err = t.TokenRequest.Transfer(wallet, typ, []uint64{value}, []view.Identity{script}, token.WithTransferMetadata(MetadataKey+pledgeID, []byte("1")))
 	return err
 }
 

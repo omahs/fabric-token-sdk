@@ -34,7 +34,7 @@ type ScanView struct {
 }
 
 func (s *ScanView) Call(context view.Context) (interface{}, error) {
-	b, err := pledge.PledgeIDExists(
+	b, err := pledge.IDExists(
 		context,
 		s.PledgeID,
 		s.Timeout,

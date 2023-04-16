@@ -91,7 +91,7 @@ func (pv *View) Call(context view.Context) (interface{}, error) {
 
 	// Inform the recipient of the pledge,
 	// recall that the recipient might be aware of only the other network
-	_, err = context.RunView(pledge.NewDistributePledgeView(tx))
+	_, err = context.RunView(pledge.NewDistributePledgeInfoView(tx))
 	assert.NoError(err, "failed to send the pledge info")
 
 	return json.Marshal(&Info{TxID: tx.ID(), PledgeID: pv.PledgeID})
@@ -124,7 +124,7 @@ func (p *RecipientResponderView) Call(context view.Context) (interface{}, error)
 	// TODO: check pledgeInfo.Script.DestinationNetwork
 
 	// Store the pledge and send a notification back
-	_, err = context.RunView(pledge.NewAcceptPledgeView(pledgeInfo))
+	_, err = context.RunView(pledge.NewAcceptPledgeIndoView(pledgeInfo))
 	assert.NoError(err, "failed accepting pledge info")
 
 	return nil, nil

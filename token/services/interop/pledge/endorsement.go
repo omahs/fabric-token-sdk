@@ -19,17 +19,17 @@ func NewCollectEndorsementsView(tx *Transaction) view.View {
 	return ttx.NewCollectEndorsementsView(tx.Transaction)
 }
 
-type receiveTransactionView struct {
+type ReceiveTransactionView struct {
 	network string
 	channel string
 }
 
 // NewReceiveTransactionView returns an instance of receiveTransactionView struct
-func NewReceiveTransactionView(network string) *receiveTransactionView {
-	return &receiveTransactionView{network: network}
+func NewReceiveTransactionView(network string) *ReceiveTransactionView {
+	return &ReceiveTransactionView{network: network}
 }
 
-func (f *receiveTransactionView) Call(context view.Context) (interface{}, error) {
+func (f *ReceiveTransactionView) Call(context view.Context) (interface{}, error) {
 	// Wait to receive a transaction back
 	ch := context.Session().Receive()
 

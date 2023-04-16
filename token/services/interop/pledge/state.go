@@ -29,7 +29,7 @@ func NewCollectProofOfExistenceView(tokenID *token2.ID, source string) *collectP
 }
 
 // RequestProofOfExistence requests a proof of the existence of a pledge corresponding to the passed information
-func RequestProofOfExistence(context view.Context, info *PledgeInfo) ([]byte, error) {
+func RequestProofOfExistence(context view.Context, info *Info) ([]byte, error) {
 	// collect proof
 	boxed, err := context.RunView(NewCollectProofOfExistenceView(info.TokenID, info.Source))
 	if err != nil {

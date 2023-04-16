@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type PledgeInfo struct {
+type Info struct {
 	// Source is the url of the network where the pledge is supposed to be
 	Source    string
 	TokenType string
@@ -26,19 +26,19 @@ type PledgeInfo struct {
 	Script        *Script
 }
 
-func (pi *PledgeInfo) Bytes() ([]byte, error) {
-	return json.Marshal(pi)
+func (i *Info) Bytes() ([]byte, error) {
+	return json.Marshal(i)
 }
 
-func (pi *PledgeInfo) FromBytes(raw []byte) error {
-	return json.Unmarshal(raw, pi)
+func (i *Info) FromBytes(raw []byte) error {
+	return json.Unmarshal(raw, i)
 }
 
 type DistributePledgeView struct {
 	tx *Transaction
 }
 
-func NewDistributePledgeView(tx *Transaction) *DistributePledgeView {
+func NewDistributePledgeInfoView(tx *Transaction) *DistributePledgeView {
 	return &DistributePledgeView{
 		tx: tx,
 	}
@@ -60,7 +60,7 @@ func (v *DistributePledgeView) Call(context view.Context) (interface{}, error) {
 		return nil, errors.WithMessagef(err, "expected at least one input, got [%d]", inputs.Count())
 	}
 
-	var ret []*PledgeInfo
+	var ret []*Info
 	for i := 0; i < outputs.Count(); i++ {
 		script := outputs.ScriptAt(i)
 		if script == nil {
@@ -77,7 +77,7 @@ func (v *DistributePledgeView) Call(context view.Context) (interface{}, error) {
 		}
 		// TODO: retrieve token's metadata
 
-		info := &PledgeInfo{
+		info := &Info{
 			Source:        FabricURL(v.tx.TokenService().ID()),
 			TokenType:     tokenType,
 			Amount:        amount,
@@ -109,12 +109,12 @@ func (v *DistributePledgeView) Call(context view.Context) (interface{}, error) {
 
 type pledgeReceiverView struct{}
 
-func ReceivePledgeInfo(context view.Context) (*PledgeInfo, error) {
+func ReceivePledgeInfo(context view.Context) (*Info, error) {
 	info, err := context.RunView(&pledgeReceiverView{})
 	if err != nil {
 		return nil, err
 	}
-	return info.(*PledgeInfo), nil
+	return info.(*Info), nil
 }
 
 func (v *pledgeReceiverView) Call(context view.Context) (interface{}, error) {
@@ -122,7 +122,7 @@ func (v *pledgeReceiverView) Call(context view.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	info := &PledgeInfo{}
+	info := &Info{}
 	if err := info.FromBytes(payload); err != nil {
 		return nil, errors.Wrapf(err, "failed unmarshalling pledge info")
 	}
@@ -130,17 +130,17 @@ func (v *pledgeReceiverView) Call(context view.Context) (interface{}, error) {
 	return info, nil
 }
 
-type AcceptPledgeView struct {
-	info *PledgeInfo
+type AcceptPledgeIndoView struct {
+	info *Info
 }
 
-func NewAcceptPledgeView(info *PledgeInfo) *AcceptPledgeView {
-	return &AcceptPledgeView{
+func NewAcceptPledgeIndoView(info *Info) *AcceptPledgeIndoView {
+	return &AcceptPledgeIndoView{
 		info: info,
 	}
 }
 
-func (a *AcceptPledgeView) Call(context view.Context) (interface{}, error) {
+func (a *AcceptPledgeIndoView) Call(context view.Context) (interface{}, error) {
 	// Store info
 	if err := Vault(context).Store(a.info); err != nil {
 		return nil, errors.Wrapf(err, "failed storing pledge info")

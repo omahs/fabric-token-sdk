@@ -95,7 +95,7 @@ func (v *FastPledgeClaimInitiatorView) Call(context view.Context) (interface{}, 
 
 	// Inform the recipient of the pledge,
 	// recall that the recipient might be aware of only the other network
-	_, err = context.RunView(pledge.NewDistributePledgeView(tx))
+	_, err = context.RunView(pledge.NewDistributePledgeInfoView(tx))
 	assert.NoError(err, "failed to send the pledge info")
 
 	time.Sleep(v.ReclamationDeadline)
@@ -133,7 +133,7 @@ func (v *FastPledgeClaimResponderView) Call(context view.Context) (interface{}, 
 	assert.Equal(me, pledgeInfo.Script.Recipient, "recipient is different [%s]!=[%s]", me, pledgeInfo.Script.Recipient)
 
 	// Store the pledge and send a notification back
-	_, err = context.RunView(pledge.NewAcceptPledgeView(pledgeInfo))
+	_, err = context.RunView(pledge.NewAcceptPledgeIndoView(pledgeInfo))
 	assert.NoError(err, "failed accepting pledge info")
 
 	// Retrieve proof of existence of the passed token id
@@ -279,7 +279,7 @@ func (v *FastPledgeReClaimInitiatorView) Call(context view.Context) (interface{}
 
 	// Inform the recipient of the pledge,
 	// recall that the recipient might be aware of only the other network
-	_, err = context.RunView(pledge.NewDistributePledgeView(tx))
+	_, err = context.RunView(pledge.NewDistributePledgeInfoView(tx))
 	assert.NoError(err, "failed to send the pledge info")
 
 	time.Sleep(v.ReclamationDeadline)
@@ -315,7 +315,7 @@ func (v *FastPledgeReClaimResponderView) Call(context view.Context) (interface{}
 	assert.Equal(me, pledgeInfo.Script.Recipient, "recipient is different [%s]!=[%s]", me, pledgeInfo.Script.Recipient)
 
 	// Store the pledge and send a notification back
-	_, err = context.RunView(pledge.NewAcceptPledgeView(pledgeInfo))
+	_, err = context.RunView(pledge.NewAcceptPledgeIndoView(pledgeInfo))
 	assert.NoError(err, "failed accepting pledge info")
 
 	// Retrieve proof of existence of the passed token id

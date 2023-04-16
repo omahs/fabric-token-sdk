@@ -66,7 +66,7 @@ func TransferPledgeValidate(ctx *Context) error {
 				return errors.Errorf("recipient of token does not correspond to the sender of reclaim request")
 			}
 
-			reclaimKey := pledge.ReclaimKey + key
+			reclaimKey := pledge.MetadataReclaimKey + key
 			v, ok := ctx.Action.GetMetadata()[reclaimKey]
 			if !ok {
 				return errors.Errorf("empty metadata of reclaim with identifier %s", reclaimKey)
@@ -99,14 +99,14 @@ func TransferPledgeValidate(ctx *Context) error {
 			if script.Deadline.Before(time.Now()) {
 				return errors.Errorf("pledge script is invalid: expiration date has already passed")
 			}
-			v, ok := ctx.Action.GetMetadata()[pledge.PledgeKey+script.ID]
+			v, ok := ctx.Action.GetMetadata()[pledge.MetadataKey+script.ID]
 			if !ok {
 				return errors.Errorf("empty metadata for pledge script with identifier %s", script.ID)
 			}
 			if !bytes.Equal(v, []byte("1")) {
 				return errors.Errorf("invalid metadatata for pledge script with identifier %s", script.ID)
 			}
-			ctx.CountMetadataKey(pledge.PledgeKey + script.ID)
+			ctx.CountMetadataKey(pledge.MetadataKey + script.ID)
 		}
 	}
 	return nil

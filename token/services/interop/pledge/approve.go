@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ApprovalRequest struct {
+type IssuerApprovalRequest struct {
 	OriginTMSID        tokn.TMSID
 	TokenID            *token.ID
 	Proof              []byte
@@ -27,27 +27,27 @@ type ApprovalRequest struct {
 	RequestorSignature []byte
 }
 
-func (r *ApprovalRequest) Bytes() ([]byte, error) {
+func (r *IssuerApprovalRequest) Bytes() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-func (r *ApprovalRequest) FromBytes(raw []byte) error {
+func (r *IssuerApprovalRequest) FromBytes(raw []byte) error {
 	return json.Unmarshal(raw, r)
 }
 
-type ApprovalResponse struct {
+type IssuerApprovalResponse struct {
 	Signature []byte
 }
 
-func (r *ApprovalResponse) Bytes() ([]byte, error) {
+func (r *IssuerApprovalResponse) Bytes() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-func (r *ApprovalResponse) FromBytes(raw []byte) error {
+func (r *IssuerApprovalResponse) FromBytes(raw []byte) error {
 	return json.Unmarshal(raw, r)
 }
 
-type approvalRequestInitiatorView struct {
+type RequestIssuerSignatureView struct {
 	originTMSID  tokn.TMSID
 	sender       view.Identity
 	issuer       view.Identity
@@ -58,7 +58,7 @@ type approvalRequestInitiatorView struct {
 }
 
 func RequestIssuerSignature(context view.Context, tokenID *token.ID, originTMSID tokn.TMSID, script *Script, proof []byte) ([]byte, error) {
-	boxed, err := context.RunView(&approvalRequestInitiatorView{
+	boxed, err := context.RunView(&RequestIssuerSignatureView{
 		originTMSID:  originTMSID,
 		sender:       script.Sender,
 		issuer:       script.Issuer,
@@ -73,8 +73,8 @@ func RequestIssuerSignature(context view.Context, tokenID *token.ID, originTMSID
 	return boxed.([]byte), nil
 }
 
-func (v *approvalRequestInitiatorView) Call(context view.Context) (interface{}, error) {
-	logger.Debugf("approvalRequestInitiatorView:caller [%s]", context.Initiator())
+func (v *RequestIssuerSignatureView) Call(context view.Context) (interface{}, error) {
+	logger.Debugf("RequestIssuerSignatureView:caller [%s]", context.Initiator())
 
 	session, err := context.GetSession(context.Initiator(), v.issuer)
 	if err != nil {
@@ -82,7 +82,7 @@ func (v *approvalRequestInitiatorView) Call(context view.Context) (interface{}, 
 	}
 
 	// Ask for issuer's signature
-	req := &ApprovalRequest{
+	req := &IssuerApprovalRequest{
 		OriginTMSID: v.originTMSID,
 		TokenID:     v.tokenID,
 		Destination: v.network,
@@ -135,7 +135,7 @@ func (v *approvalRequestInitiatorView) Call(context view.Context) (interface{}, 
 	}
 	logger.Debugf("received approval response [%v]", payload)
 
-	res := &ApprovalResponse{}
+	res := &IssuerApprovalResponse{}
 	err = res.FromBytes(payload)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal approval response [%s]", string(payload))
@@ -154,25 +154,25 @@ func (v *approvalRequestInitiatorView) Call(context view.Context) (interface{}, 
 	return res.Signature, nil
 }
 
-type approvalRequestResponderView struct {
+type RequestIssuerSignatureResponderView struct {
 	walletID string
 }
 
 func RespondRequestIssuerSignature(context view.Context, walletID string) ([]byte, error) {
-	sig, err := context.RunView(&approvalRequestResponderView{walletID: walletID})
+	sig, err := context.RunView(&RequestIssuerSignatureResponderView{walletID: walletID})
 	if err != nil {
 		return nil, err
 	}
 	return sig.([]byte), nil
 }
 
-func (v *approvalRequestResponderView) Call(context view.Context) (interface{}, error) {
+func (v *RequestIssuerSignatureResponderView) Call(context view.Context) (interface{}, error) {
 	s, payload, err := session.ReadFirstMessage(context)
 	if err != nil {
 		return nil, err
 	}
 
-	req := &ApprovalRequest{}
+	req := &IssuerApprovalRequest{}
 	if err := req.FromBytes(payload); err != nil {
 		return nil, errors.Wrapf(err, "failed unmarshalling signature request")
 	}
@@ -199,7 +199,7 @@ func (v *approvalRequestResponderView) Call(context view.Context) (interface{}, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to retrieve a verifier to check sender signature")
 	}
-	request := &ApprovalRequest{
+	request := &IssuerApprovalRequest{
 		OriginTMSID: req.OriginTMSID,
 		TokenID:     req.TokenID,
 		Proof:       req.Proof,
@@ -252,7 +252,7 @@ func (v *approvalRequestResponderView) Call(context view.Context) (interface{}, 
 		hash.Hashable(sigma).String(),
 		script.Issuer.UniqueID(),
 	)
-	res := &ApprovalResponse{Signature: sigma}
+	res := &IssuerApprovalResponse{Signature: sigma}
 	resRaw, err := res.Bytes()
 	if err != nil {
 		return nil, err
