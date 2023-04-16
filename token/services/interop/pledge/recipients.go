@@ -126,9 +126,9 @@ func (f RequestRecipientIdentityView) Call(context view.Context) (interface{}, e
 		if err := recipientData.FromBytes(payload); err != nil {
 			return nil, errors.Wrapf(err, "failed unmarshall payload [%s]", string(payload))
 		}
-		if err := tms.WalletManager().RegisterRecipientIdentity(recipientData.Identity, recipientData.AuditInfo, recipientData.Metadata); err != nil {
-			return nil, err
-		}
+		//if err := tms.WalletManager().RegisterRecipientIdentity(recipientData.Identity, recipientData.AuditInfo, recipientData.Metadata); err != nil {
+		//	return nil, err
+		//}
 
 		// Update the Endpoint Resolver
 		if err := view2.GetEndpointService(context).Bind(f.Other, recipientData.Identity); err != nil {
