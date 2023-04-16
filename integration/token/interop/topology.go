@@ -567,7 +567,7 @@ func AssetTransferTopology(tokenSDKDriver string) []api.Topology {
 		fabric.WithAnonymousIdentity(),
 		token.WithAuditorIdentity(),
 	)
-	auditor.RegisterViewFactory("register", &views2.RegisterAuditorViewFactory{})
+	auditor.RegisterViewFactory("registerAuditor", &views2.RegisterAuditorViewFactory{})
 	auditor.RegisterViewFactory("balance", &views2.BalanceViewFactory{})
 
 	alice := fscTopology.AddNodeByName("alice").AddOptions(
