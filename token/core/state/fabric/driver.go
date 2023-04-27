@@ -13,7 +13,9 @@ import (
 )
 
 type TokenSDKStateDriver interface {
+	// NewStateQueryExecutor returns a new StateQueryExecutor for the given URL
 	NewStateQueryExecutor(sp driver.ServiceProvider, url string) (driver.StateQueryExecutor, error)
+	// NewStateVerifier returns a new StateVerifier for the given url
 	NewStateVerifier(sp driver.ServiceProvider, url string) (driver.StateVerifier, error)
 }
 

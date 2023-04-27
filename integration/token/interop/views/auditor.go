@@ -85,19 +85,17 @@ func (a *AuditView) Call(context view.Context) (interface{}, error) {
 	for i := 0; i < outputs.Count(); i++ {
 		output, err := interop.ToOutput(outputs.At(i))
 		assert.NoError(err, "cannot get htlc output wrapper")
-		if output.IsHTLC() {
+		switch {
+		case output.IsHTLC():
 			// check script details
 			htlc, err := output.HTLC()
 			assert.NoError(err, "cannot get htlc script from output")
 			assert.NoError(htlc.Validate(now), "script is not valid")
-		} else {
-			if output.IsPledge() {
-				pledge, err := output.Pledge()
-				assert.NoError(err, "cannot get pledge script from output")
-				assert.NoError(pledge.Validate(), "invalid pledge script")
-			}
+		case output.IsPledge():
+			pledge, err := output.Pledge()
+			assert.NoError(err, "cannot get pledge script from output")
+			assert.NoError(pledge.Validate(), "invalid pledge script")
 		}
-
 	}
 
 	return context.RunView(ttx.NewAuditApproveView(w, tx))

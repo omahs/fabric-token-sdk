@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// CheckFabricScheme returns an error is the given url is not valid or its scheme is not equal to fabric
 func CheckFabricScheme(url string) error {
 	u, err := url2.Parse(url)
 	if err != nil {
